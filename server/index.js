@@ -17,10 +17,11 @@ const app = express()
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:30001"],
+  origin: ["http://localhost:3000", "http://localhost:3001", "https://hawa-task-manager-app.netlify.app"],
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 }));
+
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -34,6 +35,7 @@ app.use(routeNotFound)
 app.use(errorHandler)
 
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`))
+
 
                                       // after
                                       

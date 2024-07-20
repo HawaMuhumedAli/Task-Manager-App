@@ -1,5 +1,5 @@
-import express from "express"
-import { isAdminRoute, protectRoute } from "../middlewares/authMiddleware.js"
+import express from "express";
+import { isAdminRoute, protectRoute } from "../middlewares/authMiddleware.js";
 import {
     activateUserProfile,
     changeUserPassword,
@@ -11,25 +11,38 @@ import {
     markNotificationRead,
     registerUser,
     updateUserProfile,
-} from "../controllers/userController.js"
+} from "../controllers/userController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post("/register", registerUser)
-router.post("/login", loginUser)
-router.post("/logout", logoutUser)
+// Route to register a new user
+router.post("/register", registerUser);
 
-router.get("/get-team", protectRoute, isAdminRoute, getTeamList)
-router.get("/notifications", protectRoute, getNotificationsList)
+// Route to log in a user
+router.post("/login", loginUser);
 
-router.put("/profile", protectRoute, updateUserProfile)
-router.put("/read-noti", protectRoute, markNotificationRead)
-router.put("/change-password", protectRoute, changeUserPassword)
+// Route to log out a user
+router.post("/logout", logoutUser);
 
-// FOR ADMIN ONLY - ADMIN ROUTES
+// Route to get a list of all team members (admin only)
+router.get("/get-team", protectRoute, isAdminRoute, getTeamList);
+
+// Route to get notifications for the logged-in user
+router.get("/notifications", protectRoute, getNotificationsList);
+
+// Route to update user profile
+router.put("/profile", protectRoute, updateUserProfile);
+
+// Route to mark notifications as read
+router.put("/read-noti", protectRoute, markNotificationRead);
+
+// Route to change user password
+router.put("/change-password", protectRoute, changeUserPassword);
+
+// Routes for admin to activate or delete a user profile
 router
     .route("/:id")
     .put(protectRoute, isAdminRoute, activateUserProfile)
-    .delete(protectRoute, isAdminRoute, deleteUserProfile)
+    .delete(protectRoute, isAdminRoute, deleteUserProfile);
 
-export default router
+export default router;

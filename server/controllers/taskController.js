@@ -2,22 +2,19 @@ import Notice from "../models/notification.js"
 import Task from "../models/task.js"
 import User from "../models/user.js"
 
+// Function to create a new task
 export const createTask = async (req, res) => {
     try {
-        const { userId } = req.user
+        const { userId } = req.user // Get the user ID from the request
 
-        const { title, team, stage, date, priority, assets } = req.body
+        const { title, team, stage, date, priority, assets } = req.body // Destructure the task details from the request body
 
         let text = "New task has been assigned to you"
         if (team?.length > 1) {
-            text = text + ` and ${team?.length - 1} others.`
+            text = text + ` and ${team?.length - 1} others.` // Append text if the task is assigned to more than one person
         }
 
-        text =
-            text +
-            ` The task priority is set a ${priority} priority, so check and act accordingly. The task date is ${new Date(
-                date
-            ).toDateString()}. Thank you!!!`
+        text = text + ` The task priority is set at ${priority} priority, so check and act accordingly. The task date is ${new Date(date).toDateString()}. Thank you!!!`
 
         const activity = {
             type: "assigned",
@@ -52,6 +49,7 @@ export const createTask = async (req, res) => {
     }
 }
 
+// Function to duplicate an existing task
 export const duplicateTask = async (req, res) => {
     try {
         const { id } = req.params
@@ -59,7 +57,7 @@ export const duplicateTask = async (req, res) => {
         const task = await Task.findById(id)
 
         const newTask = await Task.create({
-            ...task,
+            ...task._doc, // Spread operator to copy all properties of the existing task
             title: task.title + " - Duplicate",
         })
 
@@ -71,17 +69,13 @@ export const duplicateTask = async (req, res) => {
 
         await newTask.save()
 
-        //alert users of the task
+        // Alert users of the new task
         let text = "New task has been assigned to you"
         if (task.team.length > 1) {
             text = text + ` and ${task.team.length - 1} others.`
         }
 
-        text =
-            text +
-            ` The task priority is set a ${
-                task.priority
-            } priority, so check and act accordingly. The task date is ${task.date.toDateString()}. Thank you!!!`
+        text = text + ` The task priority is set at ${task.priority} priority, so check and act accordingly. The task date is ${task.date.toDateString()}. Thank you!!!`
 
         await Notice.create({
             team: task.team,
@@ -99,6 +93,7 @@ export const duplicateTask = async (req, res) => {
     }
 }
 
+// Function to post an activity related to a task
 export const postTaskActivity = async (req, res) => {
     try {
         const { id } = req.params
@@ -127,10 +122,12 @@ export const postTaskActivity = async (req, res) => {
     }
 }
 
+// Function to get dashboard statistics
 export const dashboardStatistics = async (req, res) => {
     try {
         const { userId, isAdmin } = req.user
 
+        // Get all tasks for admin or only tasks assigned to the user
         const allTasks = isAdmin
             ? await Task.find({
                   isTrashed: false,
@@ -155,8 +152,8 @@ export const dashboardStatistics = async (req, res) => {
             .limit(10)
             .sort({ _id: -1 })
 
-        //   group task by stage and calculate counts
-        const groupTaskks = allTasks.reduce((result, task) => {
+        // Group tasks by stage and calculate counts
+        const groupTasks = allTasks.reduce((result, task) => {
             const stage = task.stage
 
             if (!result[stage]) {
@@ -178,7 +175,7 @@ export const dashboardStatistics = async (req, res) => {
             }, {})
         ).map(([name, total]) => ({ name, total }))
 
-        // calculate total tasks
+        // Calculate total tasks
         const totalTasks = allTasks?.length
         const last10Task = allTasks?.slice(0, 10)
 
@@ -186,7 +183,7 @@ export const dashboardStatistics = async (req, res) => {
             totalTasks,
             last10Task,
             users: isAdmin ? users : [],
-            tasks: groupTaskks,
+            tasks: groupTasks,
             graphData: groupData,
         }
 
@@ -201,6 +198,7 @@ export const dashboardStatistics = async (req, res) => {
     }
 }
 
+// Function to get a list of tasks with optional filtering by stage and trash status
 export const getTasks = async (req, res) => {
     try {
         const { stage, isTrashed } = req.query
@@ -230,6 +228,7 @@ export const getTasks = async (req, res) => {
     }
 }
 
+// Function to get details of a single task by ID
 export const getTask = async (req, res) => {
     try {
         const { id } = req.params
@@ -254,10 +253,10 @@ export const getTask = async (req, res) => {
     }
 }
 
+// Function to create a sub-task under a specific task
 export const createSubTask = async (req, res) => {
     try {
         const { title, tag, date } = req.body
-
         const { id } = req.params
 
         const newSubTask = {
@@ -282,6 +281,7 @@ export const createSubTask = async (req, res) => {
     }
 }
 
+// Function to update an existing task
 export const updateTask = async (req, res) => {
     try {
         const { id } = req.params
@@ -308,6 +308,7 @@ export const updateTask = async (req, res) => {
     }
 }
 
+// Function to mark a task as trashed
 export const trashTask = async (req, res) => {
     try {
         const { id } = req.params
@@ -328,6 +329,7 @@ export const trashTask = async (req, res) => {
     }
 }
 
+// Function to delete or restore a task based on query parameters
 export const deleteRestoreTask = async (req, res) => {
     try {
         const { id } = req.params
